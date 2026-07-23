@@ -32,6 +32,36 @@ export function goldMaterial(): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({ color: GOLD, metalness: 0.9, roughness: 0.25 })
 }
 
+// warm studio for PMREM: gold must reflect firelight, not a white room — neutral
+// envs get tone-mapped to white on polished metal and erase the tint
+export function emberEnvironmentScene(): THREE.Scene {
+  const environment = new THREE.Scene()
+  const panel = (
+    red: number,
+    green: number,
+    blue: number,
+    width: number,
+    height: number,
+    position: [number, number, number],
+  ): THREE.Mesh => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(width, height),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(red, green, blue), side: THREE.DoubleSide }),
+    )
+    mesh.position.set(...position)
+    mesh.lookAt(0, 0, 0)
+    return mesh
+  }
+  environment.add(
+    panel(1.5, 1.15, 0.65, 4, 7, [3, 4, 6]),
+    panel(2.4, 1.2, 0.4, 3, 9, [-7, 1, 1]),
+    panel(1.6, 0.7, 0.25, 3, 9, [7, 0, -2]),
+    panel(1.4, 0.65, 0.2, 8, 4, [0, 4, -7]),
+    panel(0.5, 0.16, 0.05, 10, 10, [0, -6, 0]),
+  )
+  return environment
+}
+
 export function emberSprite(): THREE.CanvasTexture {
   const size = 64
   const canvas = document.createElement('canvas')
