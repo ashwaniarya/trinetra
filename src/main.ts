@@ -6,6 +6,7 @@ import { createCastLayer } from './scenes/cast'
 import { createEmberLayer } from './scenes/embers'
 import { createFinaleLayers } from './scenes/finale'
 import { createHeroLayer } from './scenes/hero'
+import { createProgressRail } from './scenes/progressRail'
 import { createProphecyLayers } from './scenes/prophecy'
 import { createTempleLayers } from './scenes/temple'
 import { createWeaponLayers } from './scenes/weapon'
@@ -23,6 +24,7 @@ for (const layer of [
   ...createFinaleLayers(),
   createHeroLayer(),
   createCastLayer(),
+  createProgressRail(engine.scroll.smoothProgress),
 ]) {
   engine.addLayer(layer)
 }

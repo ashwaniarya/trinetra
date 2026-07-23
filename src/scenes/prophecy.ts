@@ -15,6 +15,38 @@ function petalGeometry(): THREE.ShapeGeometry {
   return new THREE.ShapeGeometry(shape, 12)
 }
 
+function glyphRingTexture(): THREE.CanvasTexture {
+  const size = 1536
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('2d canvas context unavailable')
+  const texture = new THREE.CanvasTexture(canvas)
+  const draw = (): void => {
+    context.clearRect(0, 0, size, size)
+    context.fillStyle = '#e0b055'
+    context.font = '55px "Rozha One", serif'
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    const glyphs = ['त्रि', 'ने', 'त्र', 'ॐ']
+    const slotCount = 28
+    for (let slot = 0; slot < slotCount; slot += 1) {
+      context.save()
+      context.translate(size / 2, size / 2)
+      context.rotate((slot / slotCount) * TAU)
+      context.translate(0, -720)
+      context.fillText(glyphs[slot % glyphs.length] ?? '', 0, 0)
+      context.restore()
+    }
+    texture.needsUpdate = true
+  }
+  draw()
+  // Rozha One may still be loading at engine init — redraw once fonts settle
+  void document.fonts.ready.then(draw)
+  return texture
+}
+
 class MandalaLayer extends ThreeLayer {
   private readonly spinners: { target: THREE.Object3D; speed: number }[] = []
   private readonly pulseMaterials: THREE.MeshStandardMaterial[] = []
@@ -77,6 +109,19 @@ class MandalaLayer extends ThreeLayer {
       band.add(this.ringMesh(3.9, 0.028))
       band.add(this.tickRing(3.9, 48, 0.2, 0.12))
       band.add(this.diamondRing(3.9, 4))
+    })
+
+    this.addBand(-1.5, -0.02, (band) => {
+      const glyphRing = new THREE.Mesh(
+        new THREE.RingGeometry(4.15, 4.75, 96),
+        new THREE.MeshBasicMaterial({
+          map: glyphRingTexture(),
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        }),
+      )
+      band.add(glyphRing)
     })
 
     this.addBand(-1.7, -0.03, (band) => {
@@ -203,27 +248,33 @@ function createProphecyTextLayer(): HtmlLayer {
   const prophecy = new HtmlLayer('prophecy-text', element)
   prophecy.scrollRange = { start: 0.13, end: 0.34 }
   const lines = [...element.querySelectorAll('p')]
+  for (const line of lines) {
+    const words = (line.textContent ?? '').split(' ')
+    // spacing lives on .word margins — bare text-node separators get mangled between transformed spans
+    line.innerHTML = words.map((word) => `<span class="word">${word}</span>`).join('')
+  }
   const timeline = gsap.timeline({ paused: true })
   const slotWidth = 1 / lines.length
   lines.forEach((line, index) => {
     const slotStart = index * slotWidth
     timeline
+      .fromTo(line, { autoAlpha: 0 }, { autoAlpha: 1, duration: slotWidth * 0.06 }, slotStart)
       .fromTo(
-        line,
-        { autoAlpha: 0, y: 34, letterSpacing: '0.16em', filter: 'blur(10px)' },
+        line.querySelectorAll('.word'),
+        { y: 26, autoAlpha: 0, filter: 'blur(8px)' },
         {
-          autoAlpha: 1,
           y: 0,
-          letterSpacing: '0.02em',
+          autoAlpha: 1,
           filter: 'blur(0px)',
-          duration: slotWidth * 0.35,
+          duration: slotWidth * 0.28,
+          stagger: slotWidth * 0.025,
           ease: 'power2.out',
         },
-        slotStart,
+        slotStart + slotWidth * 0.02,
       )
       .to(
         line,
-        { autoAlpha: 0, y: -34, filter: 'blur(8px)', duration: slotWidth * 0.35, ease: 'power2.in' },
+        { autoAlpha: 0, y: -30, filter: 'blur(6px)', duration: slotWidth * 0.35, ease: 'power2.in' },
         slotStart + slotWidth * 0.6,
       )
   })

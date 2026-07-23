@@ -26,6 +26,7 @@ class TrishulLayer extends ThreeLayer {
   private bladeMaterial!: THREE.MeshStandardMaterial
   private midribMaterial!: THREE.MeshStandardMaterial
   private fittingMaterial!: THREE.MeshStandardMaterial
+  private readonly pulseRings: THREE.Mesh[] = []
   private elapsedSeconds = 0
 
   constructor() {
@@ -111,6 +112,22 @@ class TrishulLayer extends ThreeLayer {
       this.trishul.add(prong, sideBlade)
     }
 
+    for (let pulse = 0; pulse < 3; pulse += 1) {
+      const pulseRing = new THREE.Mesh(
+        new THREE.TorusGeometry(0.13, 0.018, 8, 32),
+        new THREE.MeshBasicMaterial({
+          color: SAFFRON,
+          transparent: true,
+          opacity: 0.55,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+      pulseRing.rotation.x = Math.PI / 2
+      this.pulseRings.push(pulseRing)
+      this.trishul.add(pulseRing)
+    }
+
     for (let grip = 0; grip < 5; grip += 1) {
       const gripRing = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 8, 24), this.fittingMaterial)
       gripRing.position.y = -0.6 - grip * 0.2
@@ -190,6 +207,13 @@ class TrishulLayer extends ThreeLayer {
     this.trishul.rotation.z = Math.sin(this.elapsedSeconds * 0.8) * 0.02
     this.aura.rotation.z += deltaSeconds * 0.2
     this.aura.scale.setScalar(1 + Math.sin(this.elapsedSeconds * 2.4) * 0.04)
+    this.midribMaterial.emissiveIntensity = 0.55 + Math.sin(this.elapsedSeconds * 2.2) * 0.15
+    this.pulseRings.forEach((pulseRing, index) => {
+      const phase = (this.elapsedSeconds * 0.22 + index / 3) % 1
+      pulseRing.position.y = -3.2 + phase * 6.3
+      // scale-based fade: writing material.opacity here would fight the layer's edge-fade traversal
+      pulseRing.scale.setScalar(Math.max(Math.sin(phase * Math.PI), 0.001))
+    })
   }
 
   private blade(height: number, halfWidth: number): THREE.Group {

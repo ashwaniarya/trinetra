@@ -151,6 +151,16 @@ body {
   text-shadow: 0 0 32px rgba(217, 164, 65, 0.25);
 }
 
+.word {
+  display: inline-block;
+  margin-right: 0.28em;
+  will-change: transform, filter;
+}
+
+.word:last-child {
+  margin-right: 0;
+}
+
 .prophecy-line::before {
   content: '✦';
   display: block;
@@ -344,4 +354,52 @@ body {
   letter-spacing: 0.32em;
   outline-offset: 7px;
   box-shadow: 0 0 42px rgba(217, 164, 65, 0.5);
+}
+
+.progress-rail {
+  left: 1.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 42vh;
+  width: 14px;
+  pointer-events: none;
+}
+
+.rail-track {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(217, 164, 65, 0.18);
+}
+
+.rail-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--saffron), var(--gold));
+  transform-origin: top;
+  transform: scaleY(0);
+  box-shadow: 0 0 6px rgba(232, 134, 42, 0.5);
+}
+
+.rail-marker {
+  position: absolute;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: rgba(217, 164, 65, 0.35);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.rail-marker.active {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(217, 164, 65, 0.8);
+}
+
+@media (max-width: 640px) {
+  .progress-rail {
+    display: none;
+  }
 }

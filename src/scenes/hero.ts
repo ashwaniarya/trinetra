@@ -17,5 +17,14 @@ export function createHeroLayer(): HtmlLayer {
   hero.scrub(
     gsap.timeline({ paused: true }).to(element, { autoAlpha: 0, y: -80, ease: 'power1.in', duration: 1 }),
   )
+
+  const select = gsap.utils.selector(element)
+  gsap
+    .timeline({ delay: 0.2 })
+    .from(select('.devanagari'), { autoAlpha: 0, y: -18, duration: 0.9, ease: 'power2.out' }, 0)
+    .from(select('h1'), { autoAlpha: 0, letterSpacing: '0.34em', duration: 1.2, ease: 'power3.out' }, 0.15)
+    .from(select('.ornament'), { autoAlpha: 0, scaleX: 0, duration: 0.8, ease: 'power2.out' }, 0.7)
+    .from(select('.tagline'), { autoAlpha: 0, y: 16, duration: 0.8, ease: 'power2.out' }, 0.85)
+    .from(select('.scroll-hint'), { autoAlpha: 0, duration: 0.7 }, 1.2)
   return hero
 }

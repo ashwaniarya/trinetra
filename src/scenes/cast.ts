@@ -7,16 +7,19 @@ export function createCastLayer(): HtmlLayer {
   const cards = CAST.map(
     ({ actor, role }) => `<div class="cast-card"><h3>${actor}</h3><p>${role}</p></div>`,
   ).join('')
-  const element = sectionElement('cast', `<h2>The Chosen</h2><div class="cast-grid">${cards}</div>`)
+  const element = sectionElement(
+    'cast',
+    `<span class="kicker">अध्याय IV · The Cast</span><h2>The Chosen</h2><div class="cast-grid">${cards}</div>`,
+  )
   const cast = new HtmlLayer('cast', element)
   cast.scrollRange = { start: 0.68, end: 0.86 }
 
   const timeline = gsap.timeline({ paused: true })
   timeline
     .fromTo(
-      element.querySelector('h2'),
+      element.querySelectorAll('.kicker, h2'),
       { autoAlpha: 0, y: 40 },
-      { autoAlpha: 1, y: 0, duration: 0.2, ease: 'power2.out' },
+      { autoAlpha: 1, y: 0, duration: 0.2, stagger: 0.04, ease: 'power2.out' },
       0.02,
     )
     .fromTo(
