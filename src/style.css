@@ -5,7 +5,10 @@
   --saffron: #e8862a;
   --ember: #ff7a33;
   --parchment: #f3e3c2;
+  --ivory: #f7ecd4;
   --muted: #b39a78;
+  --display: 'Cinzel', 'Times New Roman', serif;
+  --text: 'Cormorant Garamond', Georgia, serif;
 }
 
 * {
@@ -16,7 +19,7 @@
 body {
   background: var(--bg);
   color: var(--parchment);
-  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-family: var(--display);
 }
 
 .hero,
@@ -31,10 +34,30 @@ body {
 }
 
 .devanagari {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
   font-family: 'Rozha One', serif;
   font-size: clamp(1.4rem, 3vw, 2.2rem);
   color: var(--saffron);
   letter-spacing: 0.3em;
+  padding-left: 0.3em;
+  text-shadow: 0 0 22px rgba(232, 134, 42, 0.45);
+}
+
+.devanagari::before,
+.devanagari::after {
+  content: '';
+  width: clamp(2.4rem, 6vw, 4.5rem);
+  height: 1px;
+}
+
+.devanagari::before {
+  background: linear-gradient(90deg, transparent, rgba(232, 134, 42, 0.7));
+}
+
+.devanagari::after {
+  background: linear-gradient(270deg, transparent, rgba(232, 134, 42, 0.7));
 }
 
 .hero h1,
@@ -43,26 +66,64 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   padding-left: 0.18em;
-  background: linear-gradient(180deg, #f2d494, var(--gold) 55%, #8a5a1c);
+  background: linear-gradient(180deg, #f7e3ae, #f2d494 22%, var(--gold) 55%, #8a5a1c 90%, #6e4514);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-stroke: 1px rgba(247, 227, 174, 0.12);
   filter: drop-shadow(0 0 28px rgba(232, 134, 42, 0.35));
 }
 
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: min(22rem, 60vw);
+  color: var(--saffron);
+  font-size: 0.8rem;
+}
+
+.ornament span {
+  flex: 1;
+  height: 1px;
+}
+
+.ornament span:first-child {
+  background: linear-gradient(90deg, transparent, rgba(217, 164, 65, 0.8));
+}
+
+.ornament span:last-child {
+  background: linear-gradient(270deg, transparent, rgba(217, 164, 65, 0.8));
+}
+
 .tagline {
-  color: var(--muted);
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  letter-spacing: 0.08em;
+  font-family: var(--text);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ivory);
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  letter-spacing: 0.1em;
 }
 
 .scroll-hint {
-  margin-top: 3rem;
+  margin-top: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   letter-spacing: 0.35em;
+  padding-left: 0.35em;
   text-transform: uppercase;
   animation: hint-bob 1.8s ease-in-out infinite;
+}
+
+.scroll-hint::after {
+  content: '';
+  width: 1px;
+  height: 2.6rem;
+  background: linear-gradient(180deg, rgba(217, 164, 65, 0.8), transparent);
 }
 
 @keyframes hint-bob {
@@ -78,17 +139,31 @@ body {
 
 .prophecy-line {
   grid-area: 1 / 1;
-  max-width: 40rem;
+  max-width: 44rem;
   padding: 0 2rem;
   text-align: center;
-  font-size: clamp(1.3rem, 2.6vw, 2rem);
-  line-height: 1.5;
-  color: var(--parchment);
+  font-family: var(--text);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 3vw, 2.3rem);
+  line-height: 1.6;
+  color: var(--ivory);
+  text-shadow: 0 0 32px rgba(217, 164, 65, 0.25);
+}
+
+.prophecy-line::before {
+  content: '✦';
+  display: block;
+  margin-bottom: 1.1rem;
+  font-family: var(--display);
+  font-style: normal;
+  font-size: 0.85rem;
+  color: var(--saffron);
 }
 
 .caption {
-  top: 40%;
-  max-width: 24rem;
+  top: 38%;
+  max-width: 26rem;
 }
 
 .caption-left {
@@ -100,11 +175,26 @@ body {
   text-align: right;
 }
 
+.kicker {
+  display: block;
+  margin-bottom: 0.9rem;
+  font-family: 'Cinzel', 'Rozha One', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--saffron);
+}
+
 .caption h2,
 .cast h2 {
-  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-  color: var(--gold);
-  letter-spacing: 0.1em;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: linear-gradient(180deg, #f7e3ae, var(--gold) 60%, #9a662a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(232, 134, 42, 0.25));
 }
 
 .caption h2::after {
@@ -122,9 +212,11 @@ body {
 }
 
 .caption p {
-  margin-top: 0.7rem;
+  margin-top: 0.8rem;
+  font-family: var(--text);
+  font-size: 1.12rem;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.75;
 }
 
 .cast {
@@ -154,29 +246,64 @@ body {
 }
 
 .cast-card {
+  position: relative;
   min-width: 11rem;
-  padding: 1.4rem 1.6rem;
-  border: 1px solid rgba(217, 164, 65, 0.35);
-  background: rgba(22, 4, 8, 0.55);
+  padding: 1.5rem 1.7rem;
+  border: 1px solid rgba(217, 164, 65, 0.3);
+  background: linear-gradient(165deg, rgba(217, 164, 65, 0.08), rgba(22, 4, 8, 0.55) 55%);
   backdrop-filter: blur(4px);
   transition: border-color 0.25s, transform 0.25s;
 }
 
+.cast-card::before,
+.cast-card::after {
+  content: '';
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 0 solid var(--gold);
+  transition: width 0.25s, height 0.25s;
+}
+
+.cast-card::before {
+  top: 4px;
+  left: 4px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.cast-card::after {
+  bottom: 4px;
+  right: 4px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
 .cast-card:hover {
-  border-color: rgba(217, 164, 65, 0.8);
+  border-color: rgba(217, 164, 65, 0.7);
   transform: translateY(-3px);
+}
+
+.cast-card:hover::before,
+.cast-card:hover::after {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .cast-card h3 {
   color: var(--gold);
-  font-size: 1.1rem;
-  letter-spacing: 0.06em;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .cast-card p {
-  margin-top: 0.5rem;
+  margin-top: 0.55rem;
+  font-family: var(--text);
+  font-style: italic;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 .release {
@@ -196,7 +323,7 @@ body {
 
 .cta {
   margin-top: 1rem;
-  padding: 0.9rem 2.4rem;
+  padding: 0.95rem 2.6rem;
   font-family: inherit;
   font-size: 0.9rem;
   letter-spacing: 0.25em;
@@ -204,13 +331,17 @@ body {
   color: var(--gold);
   background: transparent;
   border: 1px solid var(--gold);
+  outline: 1px solid rgba(217, 164, 65, 0.3);
+  outline-offset: 4px;
   cursor: pointer;
   box-shadow: 0 0 24px rgba(217, 164, 65, 0.2);
-  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s, outline-offset 0.25s, letter-spacing 0.25s;
 }
 
 .cta:hover {
   background: var(--gold);
   color: var(--bg);
-  box-shadow: 0 0 36px rgba(217, 164, 65, 0.45);
+  letter-spacing: 0.32em;
+  outline-offset: 7px;
+  box-shadow: 0 0 42px rgba(217, 164, 65, 0.5);
 }

@@ -3,13 +3,22 @@ import * as THREE from 'three'
 import { HtmlLayer, ThreeLayer, type Layer, type ScrollState } from 'scroll-engine'
 import { SYNOPSIS } from '../content'
 import { edgeFade, sectionElement } from '../sceneKit'
-import { BG, GOLD } from '../theme'
+import { BG, EMBER, GOLD } from '../theme'
 
-const RING_COUNT = 6
+const TAU = Math.PI * 2
+
+function petalGeometry(): THREE.ShapeGeometry {
+  const shape = new THREE.Shape()
+  shape.moveTo(0, 0)
+  shape.quadraticCurveTo(0.34, 0.42, 0, 1)
+  shape.quadraticCurveTo(-0.34, 0.42, 0, 0)
+  return new THREE.ShapeGeometry(shape, 12)
+}
 
 class MandalaLayer extends ThreeLayer {
-  private readonly ringGroups: THREE.Group[] = []
-  private readonly ringMaterials: THREE.MeshStandardMaterial[] = []
+  private readonly spinners: { target: THREE.Object3D; speed: number }[] = []
+  private readonly pulseMaterials: THREE.MeshStandardMaterial[] = []
+  private halo!: THREE.Mesh
   private elapsedSeconds = 0
 
   constructor() {
@@ -20,56 +29,69 @@ class MandalaLayer extends ThreeLayer {
 
   protected override onInit(): void {
     super.onInit()
-    this.scene.fog = new THREE.Fog(BG, 4, 26)
-    const placement = new THREE.Object3D()
-    for (let ringIndex = 0; ringIndex < RING_COUNT; ringIndex += 1) {
-      const radius = 1 + ringIndex
-      const material = new THREE.MeshStandardMaterial({
-        color: GOLD,
-        emissive: GOLD,
-        emissiveIntensity: 0.4,
-        metalness: 0.8,
-        roughness: 0.3,
-      })
-      const ringGroup = new THREE.Group()
-      ringGroup.add(
-        new THREE.Mesh(new THREE.TorusGeometry(radius, 0.02 + ringIndex * 0.008, 12, 120), material),
-      )
+    this.scene.fog = new THREE.Fog(BG, 3, 26)
 
-      const tickCount = 24 + ringIndex * 8
-      const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.02, 0.14, 0.02), material, tickCount)
-      for (let tick = 0; tick < tickCount; tick += 1) {
-        const angle = (tick / tickCount) * Math.PI * 2
-        placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
-        placement.rotation.set(0, 0, angle - Math.PI / 2)
-        placement.updateMatrix()
-        ticks.setMatrixAt(tick, placement.matrix)
-      }
-      ticks.instanceMatrix.needsUpdate = true
-      ringGroup.add(ticks)
+    const bindu = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xfff2cc, transparent: true, blending: THREE.AdditiveBlending }),
+    )
+    this.halo = new THREE.Mesh(
+      new THREE.CircleGeometry(0.55, 40),
+      new THREE.MeshBasicMaterial({
+        color: EMBER,
+        transparent: true,
+        opacity: 0.3,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    )
+    this.halo.position.z = -0.02
+    const binduLight = new THREE.PointLight(GOLD, 6, 9)
+    this.scene.add(bindu, this.halo, binduLight)
 
-      const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.035, 8, 8), material, 8)
-      for (let bead = 0; bead < 8; bead += 1) {
-        const angle = (bead / 8) * Math.PI * 2 + Math.PI / 8
-        placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
-        placement.rotation.set(0, 0, 0)
-        placement.updateMatrix()
-        beads.setMatrixAt(bead, placement.matrix)
-      }
-      beads.instanceMatrix.needsUpdate = true
-      ringGroup.add(beads)
+    this.addBand(-0.05, 0.18, (band) => {
+      band.add(this.ringMesh(0.55, 0.016))
+      band.add(this.tickRing(0.55, 12, 0.09))
+    })
 
-      ringGroup.position.z = -ringIndex * 0.35
-      this.ringGroups.push(ringGroup)
-      this.ringMaterials.push(material)
-      this.scene.add(ringGroup)
-    }
+    this.addBand(-0.25, -0.12, (band) => {
+      const triangleMaterial = this.pulseMaterial()
+      // TorusGeometry with 3 tubular segments collapses the loop into a triangle
+      const upward = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.018, 8, 3), triangleMaterial)
+      const downward = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.018, 8, 3), triangleMaterial)
+      upward.rotation.z = Math.PI / 2
+      downward.rotation.z = -Math.PI / 2
+      band.add(upward, downward)
+    })
+
+    this.addBand(-0.5, 0.05, (band) => band.add(this.petalRing(12, 1.5, 0.75, 0)))
+
+    this.addBand(-0.75, -0.07, (band) => {
+      band.add(this.ringMesh(2.4, 0.025))
+      band.add(this.beadRing(2.4, 8))
+    })
+
+    this.addBand(-1.0, -0.035, (band) => band.add(this.petalRing(20, 2.55, 1.05, TAU / 40)))
+
+    this.addBand(-1.35, 0.05, (band) => {
+      band.add(this.ringMesh(3.9, 0.028))
+      band.add(this.tickRing(3.9, 48, 0.2, 0.12))
+      band.add(this.diamondRing(3.9, 4))
+    })
+
+    this.addBand(-1.7, -0.03, (band) => {
+      band.add(this.ringMesh(5, 0.035))
+      band.add(this.tickRing(5, 64, 0.16))
+      band.add(this.beadRing(5, 8))
+    })
+
     this.scene.add(new THREE.AmbientLight(GOLD, 0.2))
     this.camera.position.z = 14
     this.scrub(
       gsap
         .timeline({ paused: true })
-        .to(this.camera.position, { z: 1.5, ease: 'power1.inOut', duration: 1 }),
+        .to(this.camera.position, { z: 1.5, ease: 'power1.inOut', duration: 1 }, 0)
+        .to(this.camera.rotation, { z: 0.35, ease: 'power1.inOut', duration: 1 }, 0),
     )
   }
 
@@ -79,12 +101,97 @@ class MandalaLayer extends ThreeLayer {
 
   protected override onUpdate(deltaSeconds: number): void {
     this.elapsedSeconds += deltaSeconds
-    this.ringGroups.forEach((ringGroup, ringIndex) => {
-      ringGroup.rotation.z += deltaSeconds * 0.06 * (ringIndex % 2 === 0 ? 1 : -1)
+    for (const { target, speed } of this.spinners) target.rotation.z += deltaSeconds * speed
+    this.pulseMaterials.forEach((material, index) => {
+      material.emissiveIntensity = 0.35 + Math.sin(this.elapsedSeconds * 1.2 + index * 0.9) * 0.18
     })
-    this.ringMaterials.forEach((material, ringIndex) => {
-      material.emissiveIntensity = 0.4 + Math.sin(this.elapsedSeconds * 1.2 + ringIndex) * 0.15
+    this.halo.scale.setScalar(1 + Math.sin(this.elapsedSeconds * 2.1) * 0.08)
+  }
+
+  private addBand(depth: number, speed: number, build: (band: THREE.Group) => void): void {
+    const band = new THREE.Group()
+    band.position.z = depth
+    build(band)
+    this.spinners.push({ target: band, speed })
+    this.scene.add(band)
+  }
+
+  private pulseMaterial(opacity = 1): THREE.MeshStandardMaterial {
+    const material = new THREE.MeshStandardMaterial({
+      color: GOLD,
+      emissive: GOLD,
+      emissiveIntensity: 0.35,
+      metalness: 0.8,
+      roughness: 0.3,
+      side: THREE.DoubleSide,
+      transparent: opacity < 1,
+      opacity,
     })
+    this.pulseMaterials.push(material)
+    return material
+  }
+
+  private ringMesh(radius: number, tube: number): THREE.Mesh {
+    return new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 12, 140), this.pulseMaterial())
+  }
+
+  private tickRing(radius: number, count: number, length: number, shortLength?: number): THREE.InstancedMesh {
+    const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.02, 1, 0.02), this.pulseMaterial(), count)
+    const placement = new THREE.Object3D()
+    for (let tick = 0; tick < count; tick += 1) {
+      const angle = (tick / count) * TAU
+      const tickLength = shortLength !== undefined && tick % 2 === 1 ? shortLength : length
+      placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
+      placement.rotation.set(0, 0, angle - Math.PI / 2)
+      placement.scale.set(1, tickLength, 1)
+      placement.updateMatrix()
+      ticks.setMatrixAt(tick, placement.matrix)
+    }
+    ticks.instanceMatrix.needsUpdate = true
+    return ticks
+  }
+
+  private beadRing(radius: number, count: number): THREE.InstancedMesh {
+    const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.04, 10, 10), this.pulseMaterial(), count)
+    const placement = new THREE.Object3D()
+    for (let bead = 0; bead < count; bead += 1) {
+      const angle = (bead / count) * TAU + Math.PI / count
+      placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
+      placement.updateMatrix()
+      beads.setMatrixAt(bead, placement.matrix)
+    }
+    beads.instanceMatrix.needsUpdate = true
+    return beads
+  }
+
+  private diamondRing(radius: number, count: number): THREE.InstancedMesh {
+    const diamonds = new THREE.InstancedMesh(new THREE.OctahedronGeometry(0.1), this.pulseMaterial(), count)
+    const placement = new THREE.Object3D()
+    for (let diamond = 0; diamond < count; diamond += 1) {
+      const angle = (diamond / count) * TAU
+      placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
+      placement.rotation.set(0, 0, angle)
+      placement.scale.set(1, 1.6, 0.5)
+      placement.updateMatrix()
+      diamonds.setMatrixAt(diamond, placement.matrix)
+    }
+    diamonds.instanceMatrix.needsUpdate = true
+    return diamonds
+  }
+
+  private petalRing(count: number, baseRadius: number, petalScale: number, angleOffset: number): THREE.InstancedMesh {
+    const petals = new THREE.InstancedMesh(petalGeometry(), this.pulseMaterial(0.6), count)
+    const placement = new THREE.Object3D()
+    for (let petal = 0; petal < count; petal += 1) {
+      const angle = (petal / count) * TAU + angleOffset
+      placement.position.set(Math.cos(angle) * baseRadius, Math.sin(angle) * baseRadius, 0)
+      placement.rotation.set(0, 0, angle - Math.PI / 2)
+      placement.scale.setScalar(petalScale)
+      placement.updateMatrix()
+      petals.setMatrixAt(petal, placement.matrix)
+    }
+    petals.instanceMatrix.needsUpdate = true
+    return petals
   }
 }
 
@@ -103,13 +210,20 @@ function createProphecyTextLayer(): HtmlLayer {
     timeline
       .fromTo(
         line,
-        { autoAlpha: 0, y: 30 },
-        { autoAlpha: 1, y: 0, duration: slotWidth * 0.35, ease: 'power2.out' },
+        { autoAlpha: 0, y: 34, letterSpacing: '0.16em', filter: 'blur(10px)' },
+        {
+          autoAlpha: 1,
+          y: 0,
+          letterSpacing: '0.02em',
+          filter: 'blur(0px)',
+          duration: slotWidth * 0.35,
+          ease: 'power2.out',
+        },
         slotStart,
       )
       .to(
         line,
-        { autoAlpha: 0, y: -30, duration: slotWidth * 0.35, ease: 'power2.in' },
+        { autoAlpha: 0, y: -34, filter: 'blur(8px)', duration: slotWidth * 0.35, ease: 'power2.in' },
         slotStart + slotWidth * 0.6,
       )
   })

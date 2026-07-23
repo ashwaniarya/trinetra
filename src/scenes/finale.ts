@@ -126,6 +126,7 @@ function createFinaleCta(): HtmlLayer {
     'finale',
     `<span class="devanagari">${DEVANAGARI}</span>
      <h1>${TITLE}</h1>
+     <div class="ornament"><span></span>✦<span></span></div>
      <p class="release">${RELEASE}</p>
      <button class="cta" type="button">Watch the reveal</button>`,
   )

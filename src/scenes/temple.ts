@@ -132,7 +132,8 @@ class TempleLayer extends ThreeLayer {
 function createTempleCaption(): HtmlLayer {
   const element = sectionElement(
     'caption caption-right',
-    `<h2>The Last Temple</h2>
+    `<span class="kicker">अध्याय III · The Temple</span>
+     <h2>The Last Temple</h2>
      <p>A thousand diyas burn for a god who stopped listening. Tonight, one of them will answer.</p>`,
   )
   const caption = new HtmlLayer('temple-caption', element)

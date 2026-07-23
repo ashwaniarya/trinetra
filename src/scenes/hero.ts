@@ -8,6 +8,7 @@ export function createHeroLayer(): HtmlLayer {
     'hero',
     `<span class="devanagari">${DEVANAGARI}</span>
      <h1>${TITLE}</h1>
+     <div class="ornament"><span></span>✦<span></span></div>
      <p class="tagline">${TAGLINE}</p>
      <span class="scroll-hint">scroll</span>`,
   )
