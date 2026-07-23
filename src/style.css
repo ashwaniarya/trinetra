@@ -41,9 +41,13 @@ body {
 .finale h1 {
   font-size: clamp(3rem, 9vw, 7rem);
   font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--gold);
-  text-shadow: 0 0 40px rgba(232, 134, 42, 0.35);
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+  background: linear-gradient(180deg, #f2d494, var(--gold) 55%, #8a5a1c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 28px rgba(232, 134, 42, 0.35));
 }
 
 .tagline {
@@ -103,6 +107,20 @@ body {
   letter-spacing: 0.1em;
 }
 
+.caption h2::after {
+  content: '';
+  display: block;
+  width: 3.2rem;
+  height: 1px;
+  margin-top: 0.6rem;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.caption-right h2::after {
+  margin-left: auto;
+  background: linear-gradient(270deg, var(--gold), transparent);
+}
+
 .caption p {
   margin-top: 0.7rem;
   color: var(--muted);
@@ -127,12 +145,26 @@ body {
   padding: 0 6vw;
 }
 
+.cast h2::before,
+.cast h2::after {
+  content: '✦';
+  margin: 0 0.8em;
+  color: var(--saffron);
+  font-size: 0.7em;
+}
+
 .cast-card {
   min-width: 11rem;
   padding: 1.4rem 1.6rem;
   border: 1px solid rgba(217, 164, 65, 0.35);
   background: rgba(22, 4, 8, 0.55);
   backdrop-filter: blur(4px);
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.cast-card:hover {
+  border-color: rgba(217, 164, 65, 0.8);
+  transform: translateY(-3px);
 }
 
 .cast-card h3 {
@@ -154,6 +186,14 @@ body {
   font-size: clamp(0.9rem, 1.4vw, 1.1rem);
 }
 
+.release::before,
+.release::after {
+  content: '✦';
+  margin: 0 0.8em;
+  color: var(--saffron);
+  font-size: 0.8em;
+}
+
 .cta {
   margin-top: 1rem;
   padding: 0.9rem 2.4rem;
@@ -165,10 +205,12 @@ body {
   background: transparent;
   border: 1px solid var(--gold);
   cursor: pointer;
-  transition: background 0.25s, color 0.25s;
+  box-shadow: 0 0 24px rgba(217, 164, 65, 0.2);
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
 }
 
 .cta:hover {
   background: var(--gold);
   color: var(--bg);
+  box-shadow: 0 0 36px rgba(217, 164, 65, 0.45);
 }

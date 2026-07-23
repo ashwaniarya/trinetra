@@ -8,7 +8,9 @@ import { BG, GOLD } from '../theme'
 const RING_COUNT = 6
 
 class MandalaLayer extends ThreeLayer {
-  private readonly rings: THREE.Mesh[] = []
+  private readonly ringGroups: THREE.Group[] = []
+  private readonly ringMaterials: THREE.MeshStandardMaterial[] = []
+  private elapsedSeconds = 0
 
   constructor() {
     super('mandala')
@@ -19,19 +21,48 @@ class MandalaLayer extends ThreeLayer {
   protected override onInit(): void {
     super.onInit()
     this.scene.fog = new THREE.Fog(BG, 4, 26)
-    for (let index = 0; index < RING_COUNT; index += 1) {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(1 + index, 0.02 + index * 0.008, 12, 120),
-        new THREE.MeshStandardMaterial({
-          color: GOLD,
-          emissive: GOLD,
-          emissiveIntensity: 0.4,
-          metalness: 0.8,
-          roughness: 0.3,
-        }),
+    const placement = new THREE.Object3D()
+    for (let ringIndex = 0; ringIndex < RING_COUNT; ringIndex += 1) {
+      const radius = 1 + ringIndex
+      const material = new THREE.MeshStandardMaterial({
+        color: GOLD,
+        emissive: GOLD,
+        emissiveIntensity: 0.4,
+        metalness: 0.8,
+        roughness: 0.3,
+      })
+      const ringGroup = new THREE.Group()
+      ringGroup.add(
+        new THREE.Mesh(new THREE.TorusGeometry(radius, 0.02 + ringIndex * 0.008, 12, 120), material),
       )
-      this.rings.push(ring)
-      this.scene.add(ring)
+
+      const tickCount = 24 + ringIndex * 8
+      const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.02, 0.14, 0.02), material, tickCount)
+      for (let tick = 0; tick < tickCount; tick += 1) {
+        const angle = (tick / tickCount) * Math.PI * 2
+        placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
+        placement.rotation.set(0, 0, angle - Math.PI / 2)
+        placement.updateMatrix()
+        ticks.setMatrixAt(tick, placement.matrix)
+      }
+      ticks.instanceMatrix.needsUpdate = true
+      ringGroup.add(ticks)
+
+      const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.035, 8, 8), material, 8)
+      for (let bead = 0; bead < 8; bead += 1) {
+        const angle = (bead / 8) * Math.PI * 2 + Math.PI / 8
+        placement.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
+        placement.rotation.set(0, 0, 0)
+        placement.updateMatrix()
+        beads.setMatrixAt(bead, placement.matrix)
+      }
+      beads.instanceMatrix.needsUpdate = true
+      ringGroup.add(beads)
+
+      ringGroup.position.z = -ringIndex * 0.35
+      this.ringGroups.push(ringGroup)
+      this.ringMaterials.push(material)
+      this.scene.add(ringGroup)
     }
     this.scene.add(new THREE.AmbientLight(GOLD, 0.2))
     this.camera.position.z = 14
@@ -47,8 +78,12 @@ class MandalaLayer extends ThreeLayer {
   }
 
   protected override onUpdate(deltaSeconds: number): void {
-    this.rings.forEach((ring, index) => {
-      ring.rotation.z += deltaSeconds * 0.06 * (index % 2 === 0 ? 1 : -1)
+    this.elapsedSeconds += deltaSeconds
+    this.ringGroups.forEach((ringGroup, ringIndex) => {
+      ringGroup.rotation.z += deltaSeconds * 0.06 * (ringIndex % 2 === 0 ? 1 : -1)
+    })
+    this.ringMaterials.forEach((material, ringIndex) => {
+      material.emissiveIntensity = 0.4 + Math.sin(this.elapsedSeconds * 1.2 + ringIndex) * 0.15
     })
   }
 }

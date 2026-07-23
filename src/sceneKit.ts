@@ -1,6 +1,14 @@
 import gsap from 'gsap'
 import * as THREE from 'three'
+import { ShaderLayer, type ScrollState } from 'scroll-engine'
 import { GOLD } from './theme'
+
+export class EdgeFadedShaderLayer extends ShaderLayer {
+  protected override onScroll(scroll: ScrollState): void {
+    super.onScroll(scroll)
+    this.opacity.value = edgeFade(this.localProgress(scroll))
+  }
+}
 
 export function sectionElement(className: string, html: string): HTMLElement {
   const element = document.createElement('section')

@@ -1,7 +1,8 @@
 import gsap from 'gsap'
 import * as THREE from 'three'
 import { HtmlLayer, ThreeLayer, type Layer, type ScrollState } from 'scroll-engine'
-import { edgeFade, fadeThroughTimeline, goldMaterial, sectionElement } from '../sceneKit'
+import { EdgeFadedShaderLayer, edgeFade, fadeThroughTimeline, goldMaterial, sectionElement } from '../sceneKit'
+import { HEAT_HAZE_FRAGMENT } from '../shaders/heatHaze'
 import { BG, EMBER, GOLD, SAFFRON } from '../theme'
 
 class TrishulLayer extends ThreeLayer {
@@ -24,25 +25,53 @@ class TrishulLayer extends ThreeLayer {
     const crossguard = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.05, 12, 40), material)
     crossguard.position.y = 3.2
     crossguard.rotation.x = Math.PI / 2
-    const centerProng = new THREE.Mesh(new THREE.ConeGeometry(0.16, 1.6, 16), material)
-    centerProng.position.y = 4.3
+    const centerProng = new THREE.Mesh(new THREE.ConeGeometry(0.16, 1.9, 16), material)
+    centerProng.position.y = 4.45
+    centerProng.scale.z = 0.35
 
     const prongArc = new THREE.TorusGeometry(0.7, 0.055, 12, 40, Math.PI)
     const arc = new THREE.Mesh(prongArc, material)
     arc.position.y = 3.5
     for (const side of [-1, 1]) {
-      const sideProng = new THREE.Mesh(new THREE.ConeGeometry(0.11, 1.1, 16), material)
-      sideProng.position.set(side * 0.7, 4.1, 0)
+      const sideProng = new THREE.Mesh(new THREE.ConeGeometry(0.11, 1.3, 16), material)
+      sideProng.position.set(side * 0.7, 4.2, 0)
+      sideProng.rotation.z = side * -0.16
+      sideProng.scale.z = 0.35
       this.trishul.add(sideProng)
     }
-    this.trishul.add(shaft, crossguard, centerProng, arc)
+    for (const ridgeY of [-1, 0, 1]) {
+      const ridge = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.02, 8, 24), material)
+      ridge.position.y = ridgeY
+      ridge.rotation.x = Math.PI / 2
+      this.trishul.add(ridge)
+    }
+    const finialSphere = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 16), material)
+    finialSphere.position.y = -3.55
+    const finialPoint = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.4, 16), material)
+    finialPoint.position.y = -3.9
+    finialPoint.rotation.x = Math.PI
+    const pedestalGlow = new THREE.Mesh(
+      new THREE.CircleGeometry(1.1, 40),
+      new THREE.MeshBasicMaterial({
+        color: EMBER,
+        transparent: true,
+        opacity: 0.35,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    )
+    pedestalGlow.rotation.x = -Math.PI / 2
+    pedestalGlow.position.y = -3.6
+    this.trishul.add(shaft, crossguard, centerProng, arc, finialSphere, finialPoint, pedestalGlow)
     this.trishul.position.y = -7
 
     const rimLight = new THREE.DirectionalLight(GOLD, 3)
     rimLight.position.set(0, 3, -5)
     const keyLight = new THREE.DirectionalLight(SAFFRON, 0.8)
     keyLight.position.set(3, 2, 4)
-    this.scene.add(this.trishul, rimLight, keyLight, new THREE.AmbientLight(EMBER, 0.15))
+    const warmFill = new THREE.PointLight(EMBER, 8, 12)
+    warmFill.position.set(0, 0.5, 2.5)
+    this.scene.add(this.trishul, rimLight, keyLight, warmFill, new THREE.AmbientLight(EMBER, 0.15))
     this.camera.position.set(0, 1.2, 12)
 
     this.scrub(
@@ -76,6 +105,16 @@ function createWeaponCaption(): HtmlLayer {
   return caption
 }
 
+function createHeatHazeLayer(): EdgeFadedShaderLayer {
+  const haze = new EdgeFadedShaderLayer('heat-haze', {
+    fragmentShader: HEAT_HAZE_FRAGMENT,
+    blending: THREE.AdditiveBlending,
+  })
+  haze.scrollRange = { start: 0.33, end: 0.53 }
+  haze.zIndex.value = 1
+  return haze
+}
+
 export function createWeaponLayers(): Layer[] {
-  return [new TrishulLayer(), createWeaponCaption()]
+  return [createHeatHazeLayer(), new TrishulLayer(), createWeaponCaption()]
 }
