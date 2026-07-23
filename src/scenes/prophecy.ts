@@ -64,8 +64,13 @@ class MandalaLayer extends ThreeLayer {
     this.scene.fog = new THREE.Fog(BG, 3, 26)
 
     const bindu = new THREE.Mesh(
-      new THREE.SphereGeometry(0.09, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0xfff2cc, transparent: true, blending: THREE.AdditiveBlending }),
+      new THREE.SphereGeometry(0.075, 16, 16),
+      new THREE.MeshBasicMaterial({
+        color: 0xf5cd82,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+      }),
     )
     this.halo = new THREE.Mesh(
       new THREE.CircleGeometry(0.55, 40),

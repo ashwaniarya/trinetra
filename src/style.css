@@ -138,6 +138,7 @@ body {
 }
 
 .prophecy-line {
+  position: relative;
   grid-area: 1 / 1;
   max-width: 44rem;
   padding: 0 2rem;
@@ -149,6 +150,19 @@ body {
   line-height: 1.6;
   color: var(--ivory);
   text-shadow: 0 0 32px rgba(217, 164, 65, 0.25);
+}
+
+.prophecy-line::after {
+  content: '';
+  position: absolute;
+  inset: -1.6rem -2.4rem;
+  z-index: -1;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  background: radial-gradient(ellipse closest-side, rgba(22, 4, 8, 0.45), rgba(22, 4, 8, 0) 78%);
+  -webkit-mask-image: radial-gradient(ellipse closest-side, #000 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, #000 45%, transparent 100%);
+  pointer-events: none;
 }
 
 .word {
@@ -174,6 +188,19 @@ body {
 .caption {
   top: 38%;
   max-width: 26rem;
+}
+
+.caption::after {
+  content: '';
+  position: absolute;
+  inset: -1.4rem -2rem;
+  z-index: -1;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: radial-gradient(ellipse closest-side, rgba(22, 4, 8, 0.38), rgba(22, 4, 8, 0) 80%);
+  -webkit-mask-image: radial-gradient(ellipse closest-side, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, #000 40%, transparent 100%);
+  pointer-events: none;
 }
 
 .caption-left {
