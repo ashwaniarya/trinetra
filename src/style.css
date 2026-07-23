@@ -377,6 +377,16 @@ body {
   box-shadow: 0 0 42px rgba(217, 164, 65, 0.5);
 }
 
+.finale-scrim {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: min(58rem, 94vw);
+  height: min(32rem, 72vh);
+  background: radial-gradient(ellipse closest-side, rgba(22, 4, 8, 0.65), rgba(22, 4, 8, 0) 76%);
+  pointer-events: none;
+}
+
 .progress-rail {
   left: 1.8rem;
   top: 50%;

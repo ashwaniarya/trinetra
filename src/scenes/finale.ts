@@ -85,7 +85,20 @@ class ThirdEyeLayer extends ThreeLayer {
     this.eye.add(ring, pupil, this.flare, this.outerRing, rays, this.sparks)
     this.eye.scale.setScalar(0.2)
     this.scene.add(this.eye, new THREE.AmbientLight(GOLD, 0.1))
-    this.camera.position.z = 8
+
+    const orbit = { progress: 0 }
+    const applyOrbit = (): void => {
+      const azimuth = -0.75 * (1 - orbit.progress)
+      const radius = 9.5 - 4.3 * orbit.progress
+      this.camera.position.set(
+        Math.sin(azimuth) * radius,
+        -2 + 2.6 * orbit.progress,
+        Math.cos(azimuth) * radius,
+      )
+      this.camera.lookAt(0, 0, 0)
+      this.camera.rotation.z += 0.12 * (1 - orbit.progress)
+    }
+    applyOrbit()
 
     this.scrub(
       gsap
@@ -94,7 +107,7 @@ class ThirdEyeLayer extends ThreeLayer {
         .to(ringMaterial, { emissiveIntensity: 6, ease: 'power2.in', duration: 1 }, 0)
         .to(this.glow, { intensity: 30, ease: 'power2.in', duration: 1 }, 0)
         .to(this.burst, { spread: 1, ease: 'power2.out', duration: 1 }, 0)
-        .to(this.camera.position, { z: 5, ease: 'power1.inOut', duration: 1 }, 0),
+        .to(orbit, { progress: 1, ease: 'power1.inOut', duration: 1, onUpdate: applyOrbit }, 0),
     )
   }
 
@@ -124,7 +137,8 @@ class ThirdEyeLayer extends ThreeLayer {
 function createFinaleCta(): HtmlLayer {
   const element = sectionElement(
     'finale',
-    `<span class="devanagari">${DEVANAGARI}</span>
+    `<div class="finale-scrim"></div>
+     <span class="devanagari">${DEVANAGARI}</span>
      <h1>${TITLE}</h1>
      <div class="ornament"><span></span>✦<span></span></div>
      <p class="release">${RELEASE}</p>
